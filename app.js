@@ -108,3 +108,4 @@ const App = (function (){
 })(ItemCtrl, UICtrl)
 
 App.init()
+

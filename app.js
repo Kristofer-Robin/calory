@@ -11,7 +11,7 @@ const ItemCtrl = (function (){
         items: [
             new Item(0, 'Steak Dinner', 1200),
             new Item(1, 'Cookie', 200),
-            new Item(0, 'Eggs', 300),
+            new Item(0, 'Eggs', 300)
         ],
         total: 0
     }
@@ -48,7 +48,7 @@ const UICtrl = (function (){
             document.querySelector('.total-calories').tetxContent = totalCalories
         }
     }
-})
+})();
 
 const App = (function (){
     return{

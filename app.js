@@ -60,6 +60,7 @@ const ItemCtrl = (function (){
         getCurrentItem: function (){
             return data.currentItem
         },
+
         updateItem: function (name, calories) {
             let updated = null
             data.items.forEach(function (item) {
@@ -70,6 +71,14 @@ const ItemCtrl = (function (){
                 }
             })
             return updated
+        },
+        deleteItem: function (deletedItem) {
+            data.items.forEach(function (item, index){
+                if(item.id === deletedItem.id){
+                    data.items.splice(index, 1)
+
+                }
+            })
         }
     }
 })();
@@ -81,7 +90,8 @@ const UICtrl = (function (){
         itemNameInput: '#item-name',
         itemCaloriesInput: '#item-calories',
         addBtn: '.add-btn',
-        updateBtn: '.update-btn'
+        updateBtn: '.update-btn',
+        deleteBtn: '.delete-btn'
     }
 
     return{
@@ -129,16 +139,19 @@ const UICtrl = (function (){
         showEditState: function () {
             document.querySelector(UISelectors.addBtn).style.display = 'none'
             document.querySelector(UISelectors.updateBtn).style.display = 'inline'
+            document.querySelector(UISelectors.deleteBtn).style.display = 'inline'
         },
         clearEditState: function () {
             document.querySelector(UISelectors.addBtn).style.display = 'inline'
             document.querySelector(UISelectors.updateBtn).style.display = 'none'
+            document.querySelector(UISelectors.deleteBtn).style.display = 'none'
         },
         addItemToForm: function () {
             document.querySelector(UISelectors.itemNameInput).value = ItemCtrl.getCurrentItem().name
             document.querySelector(UISelectors.itemCaloriesInput).value = ItemCtrl.getCurrentItem().calories
             UICtrl.showEditState()
         },
+
         updateItem: function (item) {
             let listOfItems = document.querySelectorAll(UISelectors.listOfItems)
             listOfItems.forEach(function (listItem){
@@ -151,7 +164,10 @@ const UICtrl = (function (){
                             </a>`
                 }
             })
-        }
+        },
+         deleteItem: function (item) {
+            document.querySelector(`#item-${item.id}`).remove()
+         }
     }
 })()
 
@@ -176,16 +192,30 @@ const StorageCtrl = (function (){
             }
             return items;
         },
-        updateItemInStorage: function (updatedItem) {
+        updateItemInStorage: function (updatedItem){
             let items
-            if (localStorage.getItem('items') === null){
+            if(localStorage.getItem('items') === null){
                 items = []
             } else {
                 items = JSON.parse(localStorage.getItem('items'))
             }
-            items.forEach(function (itemFormStorage, index){
-                if(itemFormStorage.id === updatedItem.id){
+            items.forEach(function (itemFromStorage, index) {
+                if(itemFromStorage.id === updatedItem.id){
                     items.splice(index, 1, updatedItem)
+                }
+            })
+            localStorage.setItem('items', JSON.stringify(items))
+        },
+        deleteItemInStorage: function (deletedItem){
+            let items
+            if(localStorage.getItem('items') === null){
+                items = []
+            } else {
+                items = JSON.parse(localStorage.getItem('items'))
+            }
+            items.forEach(function (itemFromStorage, index) {
+                if(itemFromStorage.id === deletedItem.id){
+                    items.splice(index, 1)
                 }
             })
             localStorage.setItem('items', JSON.stringify(items))
@@ -240,6 +270,20 @@ const App = (function (){
         UICtrl.clearEditState()
         event.preventDefault()
     }
+    const itemDeleteSubmit = function (event) {
+        const deletedItem = ItemCtrl.getCurrentItem()
+        console.log(deletedItem)
+        ItemCtrl.deleteItem(deletedItem)
+        console.log(ItemCtrl.logData())
+        UICtrl.deleteItem(deletedItem)
+        StorageCtrl.deleteItemInStorage(deletedItem)
+        const totalCalories = ItemCtrl.getTotalCalories()
+        UICtrl.showTotalCalories(totalCalories)
+        UICtrl.clearInput()
+        UICtrl.clearEditState()
+        event.preventDefault()
+        }
+
 
     const loadEventListeners = function (){
         const UISelectors = UICtrl.getSelectors()
@@ -248,6 +292,7 @@ const App = (function (){
         document.querySelector(UISelectors.addBtn).addEventListener('click', itemAddSubmit)
         document.querySelector(UISelectors.itemList).addEventListener('click', itemEditSubmit)
         document.querySelector(UISelectors.updateBtn).addEventListener('click', itemUpdateSubmit)
+        document.querySelector(UISelectors.deleteBtn).addEventListener('click', itemDeleteSubmit)
     }
 
     return{
